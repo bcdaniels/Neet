@@ -271,4 +271,72 @@ def average_sensitivity(net, states=None, weights=None, calc_trans=True):
                                   calc_trans=calc_trans)
     
     return np.sum(Q)/net.size
+
+
+# random average sensitivity stuff
+
+from neet.boolean import randomnet
+
+def bias(net):
+    """
+    Find the proportion of ones in the network's logic truth table.
+    """
+    return np.mean([float(len(t[1]))/(2**len(t[0])) for t in net.table ])
+
+def degrees(net):
+    return [ len(net.neighbors_in(i)) for i in range(net.size) ]
+
+def average_sensitivity_random(net,connections='fixed-structure',biastype='mean',
+                              fix_external=False):
+    """
+    connections: 'fixed-structure','fixed-in-degree','fixed-mean-degree'
+        (At the moment 'fixed-structure' and 'fixed-in-degree' give the same answer.
+         Is this always true?)
+    biastype: 'mean','node'
+    """
     
+    # set external and internal nodes
+    if fix_external:
+        externals = randomnet._external_nodes(net)
+    else:
+        externals = set()
+    internals = [ i for i in range(net.size) if i not in externals ]
+    #print "externals =",externals
+    
+    # calculate average bias for entire network
+    meanp = bias(net)
+    
+    # calculate degrees of nodes
+    degreeList = degrees(net)
+    
+    nodeSensitivities = np.zeros(net.size)
+    
+    # loop over internal nodes
+    for i in internals:
+        tablerow = net.table[i]
+        p = float(len(tablerow[1]))/(2**len(tablerow[0]))
+        #print "i =",i,", p =",p
+            
+        if biastype == 'mean':
+            nodeP = meanp
+        elif biastype == 'node':
+            nodeP = p
+        else:
+            raise Exception('Unrecognized biastype')
+                
+        if connections == 'fixed-mean-degree':
+            nodeDegree = np.mean(degreeList)
+        elif (connections == 'fixed-in-degree') or (connections == 'fixed-structure'):
+            nodeDegree = degreeList[i]
+        else:
+            raise Exception('Unrecognized connections type')
+            
+        nodeSensitivities[i] = 2.*nodeDegree*nodeP*(1.-nodeP)
+            
+    # loop over external nodes
+    for i in externals:
+        nodeSensitivities[i] = 1
+            
+    return np.mean(nodeSensitivities)
+
+
