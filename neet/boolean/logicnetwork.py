@@ -527,10 +527,22 @@ class LogicNetwork(object):
 
             indices = tuple([names.index(node) for node in sub_nodes])
 
-            for dec_state in range(2**len(sub_nodes)):
-                bin_state = '{0:0{1}b}'.format(dec_state, len(sub_nodes))
-                if eval(logic_expr.format(*bin_state)):
-                    conditions.add(bin_state)
+            # *** BCD test 7.5.2018
+            print "len(sub_nodes) =",len(sub_nodes)
+            if len(sub_nodes) == 27: # this must be Shc
+                from test_load_ErbB_faster import ShcFunc
+                for dec_state in range(2**len(sub_nodes)):
+                    if dec_state%100000 == 0: print dec_state
+                    bin_state = '{0:0{1}b}'.format(dec_state, len(sub_nodes))
+                    binaryVec = [int(x) for x in bin_state]
+                    if ShcFunc(binaryVec):
+                        conditions.add(bin_state)
+            # *** end BCD test 7.5.2018
+            else:
+                for dec_state in range(2**len(sub_nodes)):
+                    bin_state = '{0:0{1}b}'.format(dec_state, len(sub_nodes))
+                    if eval(logic_expr.format(*bin_state)):
+                        conditions.add(bin_state)
 
             table.append((indices, conditions))
 
