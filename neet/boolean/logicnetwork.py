@@ -247,7 +247,7 @@ class LogicNetwork(object):
             >>> net._unsafe_update([0, 0, 1], pin=[1], values={0: 0})
             [0, 0, 0]
         """
-        encoded_state = self.state_space().encode(net_state)
+        encoded_state = self.state_space()._unsafe_encode(net_state)
 
         if index is None:
             indices = range(self.size)
@@ -463,7 +463,7 @@ class LogicNetwork(object):
         return cls(table, names, reduced)
 
     @classmethod
-    def read_logic(cls, logic_file, external_nodes_file=None):
+    def read_logic(cls, logic_file, external_nodes_file=None, reduced=False):
         """
         Read a network from a file of logic equations.
 
@@ -551,13 +551,7 @@ class LogicNetwork(object):
             for i in range(len(extras)):
                 table.append((((len(names) - len(extras) + i),), set('1')))
 
-        return cls(table, names, reduced=True)
-
-    # def _incoming_neighbors(self,index=None):
-    #     if index:
-    #         return list(self.table[index][0])
-    #     else:
-    #         return [list(row[0]) for row in self.table]
+        return cls(table, names, reduced)
 
     def neighbors_in(self, index):
         """
@@ -627,7 +621,7 @@ class LogicNetwork(object):
         """
         return self.neighbors_in(index) | self.neighbors_out(index)
 
-    def to_networkx_graph(self,labels='indices'):
+    def to_networkx_graph(self, labels='indices'):
         """
         Return networkx graph given neet network.  Requires networkx.
 
@@ -636,7 +630,7 @@ class LogicNetwork(object):
         :returns: a networkx DiGraph
         """
         if labels == 'names':
-            if hasattr(self,'names') and (self.names != None):
+            if hasattr(self, 'names') and (self.names != None):
                 labels = self.names
             else:
                 raise ValueError("network nodes do not have names")
@@ -648,18 +642,18 @@ class LogicNetwork(object):
             raise ValueError("labels must be 'names' or 'indices'")
 
         edges = []
-        for i,label in enumerate(labels):
+        for i, label in enumerate(labels):
             for j in self.neighbors_out(i):
-                edges.append((labels[i],labels[j]))
+                edges.append((labels[i], labels[j]))
 
-        return nx.DiGraph(edges,name=self.metadata.get('name'))
+        return nx.DiGraph(edges, name=self.metadata.get('name'))
 
-    def draw(self,labels='indices',filename=None):
+    def draw(self, labels='indices', filename=None):
         """
         Output a file with a simple network drawing.  
-        
+
         Requires networkx and pygraphviz.
-        
+
         Supported image formats are determined by graphviz.  In particular,
         pdf support requires 'cairo' and 'pango' to be installed prior to
         graphviz installation.
@@ -669,5 +663,6 @@ class LogicNetwork(object):
         :param filename: filename to write drawing to. Temporary filename will be used if no filename provided.
         :returns: a pygraphviz network drawing
 
-        """        
-        nx.nx_agraph.view_pygraphviz(self.to_networkx_graph(labels=labels),prog='circo',path=filename)
+        """
+        nx.nx_agraph.view_pygraphviz(self.to_networkx_graph(
+            labels=labels), prog='circo', path=filename)
