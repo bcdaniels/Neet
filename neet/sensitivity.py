@@ -146,6 +146,9 @@ def average_difference_matrix(net,states=None,weights=None,calc_trans=True):
                 otherNodes = list(copy.copy(nodesInfluencingI))
                 otherNodes.pop(jindex)
                 otherNodeStates = _states_limited(otherNodes,state0)
+                # BCD debug 7.11.2018
+                print jindex,"/",len(nodesInfluencingI)
+                # end BCD debug 7.11.2018
                 for state in otherNodeStates:
                     # (might be able to do faster by calculating transitions once
                     #  for each i)

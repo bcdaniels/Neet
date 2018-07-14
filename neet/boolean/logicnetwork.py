@@ -117,6 +117,10 @@ class LogicNetwork(object):
                 for idx, state in zip(indices, condition):
                     encoded_condition += 2 ** long(idx) if int(state) else 0
                 encoded_sub_table.add(encoded_condition)
+                # BCD debug 7.10.2018
+                if len(encoded_sub_table)%100000 == 0:
+                    print len(encoded_sub_table),"/",len(conditions)
+                # end BCD debug 7.10.2018
             self._encoded_table.append((mask_code, encoded_sub_table))
 
     def is_dependent(self, target, source):
