@@ -27,14 +27,16 @@ from .logicnetwork import LogicNetwork
 from .wtnetwork import WTNetwork
 import networkx as nx
 
-def RBN_Kim(network_size,avg_deg,prob_inh,type=1,seed=None):
+def RBN_Kim(network_size,avg_deg,prob_inh,type=1,seed=None,thresholdParam=None):
     """
     Create a random network designed to mimic those in Kim et al. 2013.
     
-    network_size        : Number of nodes
-    avg_deg             : Average degree of nodes (used to set
-                          p = avg_deg / network_size)
-    prob_inh            : Probability that a given edge is inhibitory
+    network_size            : Number of nodes
+    avg_deg                 : Average degree of nodes (used to set
+                              p = avg_deg / network_size)
+    prob_inh                : Probability that a given edge is inhibitory
+    thresholdParam (None)   : If given a value, set each node's
+                              threshold to thresholdParam*(sum of incoming edges)
     """
     if type != 1:
         raise NotImplementedError
@@ -53,7 +55,12 @@ def RBN_Kim(network_size,avg_deg,prob_inh,type=1,seed=None):
                 if np.random.random() < prob_inh:
                     adj[i,j] = -1
     
-    return WTNetwork(adj)
+    if thresholdParam:
+        thresholds = thresholdParam * np.sum(adj,axis=1)
+    else:
+        thresholds = None
+    
+    return WTNetwork(adj,thresholds=thresholds)
     
 
 def RBN(network_size, k, p, self_loops=False):
