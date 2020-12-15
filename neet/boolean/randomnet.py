@@ -88,7 +88,7 @@ def RBN(network_size, k, p, self_loops=False):
     return LogicNetwork(new_table)
 
 def _RBN_input_labels(output_label, network_size, connectivity, self_loops=False):
-    labels = range(network_size)
+    labels = list(range(network_size))
     if not self_loops:
         labels.remove(output_label)
     random.shuffle(labels)
@@ -104,7 +104,7 @@ def _RBN_output_pattern(connectivity,bias):
     return pattern
 
 def _label_to_state(label, digits):
-    return np.array(map(int,list(format(label,'0'+str(digits)+'b'))))
+    return np.array(list(map(int,list(format(label,'0'+str(digits)+'b')))))
 
 def random_logic(logic_net, p=0.5, connections='fixed-structure',
                  fix_external=False, make_irreducible=False,
